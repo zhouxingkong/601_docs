@@ -149,9 +149,75 @@ compile 'com.github.jiangdongguo:AndroidUSBCamera:2.2.8'
 
 ### 3.3错误集锦：
 
-错误1
+#### 错误1
 NDK编译出错解决办法。直接移植例程可能会出现下述问题：
 	Ndk-build.cmd返回非零数字2
 	No toolchains found in the NDK toolchains folder for ABI with prefix: mips64el-linux-android
 使用Android SDK组件中安装的NDK会导致编译各种错误。需要下载单独的NDK。在官网上下载最新版本安装即可。
 下载地址：https://developer.android.google.cn/ndk/downloads/
+
+![uvc_error1](images/2018/11/uvc-error1.png)
+在Android studio中file  project structure。选择解压后NDK的路径，然后重新编译程序。
+
+#### 错误2
+问题：
+Failed to resolve: common
+使用Android studio自带的gradle往往都会出现这个问题。从GitHub下载demo工程的gradle版本都是3.3，如果根据Android studio的提示将gradle升级到最新版本就会出现程序无法找到common的错误。
+如果使用Android studio自带gradle进行编译就不能升级新版本gradle。但是经过我的尝试，手动指定新版本的gradle不会引起编译出错。
+首先需要下载gradle。到官网下载适合版本的gradle: https://gradle.org/releases/ (经过我测试的版本是4.5)
+并在settings gradle中指定下载的gradle路径
+
+![uvc_error2](images/2018/11/uvc-error2.png)
+注意:当Android studio弹出下面窗口提示更新gradle时，千万不要点update。可以点击最右面的按钮，永不更新！！！
+![uvc_error2_2](images/2018/11/uvc-error2-2.png)
+
+#### 错误3
+问题：
+在UVCCamera例程中点击打开摄像头设备后程序闪退。
+这是因为某种原因导致我们编译的NDK有问题。
+1使用编译好的SO库替代NDK编译的SO库
+2将libuvccamera目标中build.gradle的如下几行注释掉。阻止NDK编译覆盖我们的SO库。
+
+如果突然出现程序内大量包找不到(宏观表现就是程序满江红全是未定义的变量)，使用下述方法解决
+解决方案：菜单栏file->invalidate caches/restart -> invalidate and restart
+
+### 3.4 结果展示
+
+效果如下图所示：
+![uvc_img](images/2018/11/uvc-img.png)
+
+
+### 3.5 参考文献
+
+参考文档：
+UVCCamera开发通用库 https://blog.csdn.net/andrexpert/article/details/78324181
+UVCCamera安卓驱动USB摄像头 https://blog.csdn.net/king_jie0210/article/details/71106720
+UVCCamera使用 https://blog.csdn.net/fengshiguang2012/article/details/79569280
+Linux USB 摄像头驱动 https://blog.csdn.net/qq_26093511/article/details/78763824
+UVC驱动外接摄像头 https://blog.csdn.net/luzhenyuxfcy/article/details/50883910
+
+参考例程：
+https://github.com/jiangdongguo/AndroidUSBCamera
+https://github.com/saki4510t/UVCCamera
+
+
+其他
+Android.mk转cmake https://blog.csdn.net/u012528526/article/details/80647537
+
+## 4 源码萃取
+本章分析两种方案分别对应的底层架构和源码。单纯使用方案则不需要阅读本章
+
+
+### 4.1 方案底层架构
+#### 方案1:
+Java层只提供基本界面，实际工作都是在Android Framework层进行处理。方案1APP的Framework层实质上就是一个V4L2应用程序。
+在初始化函数中打开/dev/video0设备并通过ioctl系统调用与uvc_driver驱动程序进行交互。交互的方式遵循V4L2接口规范。
+uvc_driver将用户的ioctl系统调用转化成URB数据结构发送到USB core，也就是Linux系统USB核心。USB核心对系统中所有的USB请求进行调度最终实现驱动摄像头的目的
+
+#### 方案2：
+Java app层使用android.hardware.usb包进行USB连接的管理。发现并处理USB设备接入广播。并在回调函数中对USB连接进行处理。
+用户在回调函数中调用UVCMonitor提供的API函数，这些API函数都会经过UVCMonitor转发到Framework层的UVCCamera模块。
+Framework层的UVCCamera模块提供了对libuvc库的封装。所有对USB摄像头的操作最终调用的都是libuvc的库函数。
+Libuvc库是的运行需要基于开源的USB通信库libusb。可以理解为libuvc和libusb是根据协议栈进行层层封装的关系。
+运行与Framework层的libusb若想驱动USB接口，最终也需要和linux内核进行通信，这个通信是基于USB设备文件系统进行的。
+USB设备文件系统和uvc_driver一样，也属于Linux内核USB驱动程序。由它发起的USB传输事务最终也需要封装成URB的形式交由usb core进行处理。

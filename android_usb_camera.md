@@ -221,3 +221,5 @@ Framework层的UVCCamera模块提供了对libuvc库的封装。所有对USB摄�
 Libuvc库是的运行需要基于开源的USB通信库libusb。可以理解为libuvc和libusb是根据协议栈进行层层封装的关系。
 运行与Framework层的libusb若想驱动USB接口，最终也需要和linux内核进行通信，这个通信是基于USB设备文件系统进行的。
 USB设备文件系统和uvc_driver一样，也属于Linux内核USB驱动程序。由它发起的USB传输事务最终也需要封装成URB的形式交由usb core进行处理。
+
+![android_uvc_framework](images/2018/11/android-uvc-framework.png)

@@ -1,12 +1,12 @@
 
-## 系统服务裁剪
+## 1.底层系统服务裁剪
 
 \system\core\rootdir\init.rc
 
 >init.rc文件语法参考
 https://www.jianshu.com/p/cb73a88b0eed
 
-### Action
+### 1.1 Action
 
 动作的一般格式如下：
 ```
@@ -16,7 +16,7 @@ on  <trigger>           ## 触发条件
 ```
 从上面，我们可以知道，一个Action其实就是响应某事件的过程。即当<trigger>所描述的触发事件产生时，依次执行各种command(同一事件可以对应多个命令)。
 
-### service
+### 1.2 service
 
 "服务"(service)的关键字 service后面跟着的是服务名称。我们可以使用"start"命令加"服务名称"来启动一个服务。关键字以下的行称为"选项"，没一个选项占用一行，选项也有多种，常见的"class"表示服务所属的类别。
 
@@ -33,7 +33,7 @@ service <name><pathname> [ <argument> ]*
 + \<argument>：启动service所带的参数
 + \<option>：对此service的约束选项
 
-### Android所有系统服务
+### 1.3 Android所有系统服务
 
 本节列出了android5.1系统init.rc中所有使用service关键字启动的系统服务。
 
@@ -61,3 +61,47 @@ keystore|证书服务|可删
 dumpstate|一种性能测试工具|可删
 mdnsd  |多播DNS守护进程|可删  
 uncrypt|也和加密有关|可删
+
+## 2.上层系统服务裁剪
+
+### 2.1 上层服务启动流程
+
+SystemServer功能为启动各种上层服务。源码位于
+\frameworks\base\services\java\com\android\server\SystemServer.java
+
+不同Android版本有不同的实现。至少Android5.1版本和4.2.2版本已经不一样了。本文介绍5.1版本裁剪
+
+启动上层服务的代码在run()方法中。
+
+``` java
+private void run() {
+//.......
+        // Initialize native services.
+        System.loadLibrary("android_servers");
+        nativeInit();
+//......................
+        // Start services.
+        try {
+            startBootstrapServices();   //这里面启动的服务不能删
+            startCoreServices();  //这里也不能删
+            startOtherServices(); //主要删这里的
+        } catch (Throwable ex) {
+            Slog.e("System", "******************************************");
+            Slog.e("System", "************ Failure starting system services", ex);
+            throw ex;
+        }
+//.............
+}
+```
+
+所以上层服务裁剪就是在startOtherServices()中裁剪服务的启动代码。
+
+
+### 2.2 上层服务裁剪
+
+服务名称|功能|操作
+--|--|--
+SchedulingPolicyService|调度策略|不能删
+
+
+## 3.应用程序裁剪

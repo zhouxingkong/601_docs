@@ -2,7 +2,7 @@
 
 
 
-方案1：OWC法
+## 方案1：OWC法
 方案程序参考：
 https://www.cnblogs.com/xiaoli3007/p/4309356.html
 
@@ -36,8 +36,10 @@ mount -o remount  /dev/block/platform/dw_mmc.2/by-num/p2 /system
 ```
 
 
-方案2: shell命令法
+## 方案2: shell命令法
+
 三种文件拷贝的命令：
+
 ``` shell
 Cp a.pdf /storage/usbdisk1/PA/
 Cat a.pdf > /storage/usbdisk1/PA/
@@ -47,6 +49,7 @@ Dd input=a.pdf  output=/storage/usbdisk1/PA/ a.pdf
 
 查找原因：为了优化外部存储IO，对linux外部存储设备的IO操作不能马上执行，而是采用延迟写入的方法。
 先将数据缓存在内存中，当IO总线复旦小的时候再写入U盘或SD卡。
+
 为了验证是否是这个原因，安装了ES文件管理器，使用ES进行复制，复制完后拔出U盘。文件大小仍然是0kb
 
 
@@ -60,9 +63,10 @@ Dd input=a.pdf  output=/storage/usbdisk1/PA/ a.pdf
 https://blog.csdn.net/e421083458/article/details/13506659
 
 U盘和SD卡文件挂载点如下：
+```
 /dev/fuse /storage/sdcard1 fuse rw,nosuid,nodev,noexec,relatime,user_id=1023,group_id=1023,default_permissions,allow_other 0 0
 /dev/fuse /storage/usbdisk1 fuse rw,nosuid,nodev,noexec,relatime,user_id=1023,group_id=1023,default_permissions,allow_other 0 0
-
+```
 Sync命令
 
 方案3：使用开源库

@@ -126,3 +126,41 @@ SchedulingPolicyService|调度策略|不能删
 设备制造商的应用程序通常位于源码路径下的vendor/目录中，除了应用程巧的apk文件之外，还有可能存在预编译的驱动程序（动态共享库.so文件）化及其他系统工具等。通常设备制造商的私有应用程序和文件不提供源码，也不需要进行编译，而是在android源码编译完成后再打包进系统镜像文件中。
 
 ### 3.2 优化的应用
+
+
+### 3.3 预装应用
+
+在AndroidMenifest.xml中指定作为桌面启动。
+
+``` xml
+<intent-filter>
+  <action android:name="android.intent.action.MAIN" />
+  <category android:name="android.intent.category.HOME" />
+  <category android:name="android.intent.category.DEFAULT" />
+  <category android:name="android.intent.category.MONKEY"/>
+</intent-filter>
+```
+
+编写android.mk文件
+
+``` makefile
+LOCAL_PATH := $(call my-dir)
+my_archs := armeabi-v7a
+my_src_arch := $(call get-prebuilt-src-arch, $(my_archs))
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := PA-launcher
+LOCAL_MODULE_CLASS := APPS
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
+LOCAL_MODULE_PATH := $(TARGET_OUT)/priv-app
+
+LOCAL_CERTIFICATE := platform
+#LOCAL_SRC_FILES := $(LOCAL_MODULE)_$(my_src_arch).apk
+LOCAL_SRC_FILES := $(LOCAL_MODULE).apk
+LOCAL_MODULE_TARGET_ARCH := $(my_src_arch)
+LOCAL_MULTILIB := both
+include $(BUILD_PREBUILT)
+```
+
+参考:https://blog.csdn.net/maetelibom/article/details/77466851

@@ -69,10 +69,14 @@ CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV=y
 重新编译并烧写内核后。插入USB摄像头，查看/dev/video0设备文件是否产生。
 
 成功生成/dev/video0设备后，就可以在Android APP中通过读写/dev/video0设备来操作USB摄像头了。
+
 但是需要注意的是，如果开发板未获取到root权限可能导致/dev/video0设备无法访问，使用adb命令将/dev/video0设备的访问权限设置为666即可。
+
 进入adb shell，然后输入如下命令
+```
 	su
 	chmod 666 /dev/video0
+```
 也可将/ueventd.xxxx.rc中的/dev/video0的权限设置 为 0666
 
 ### 2.2 V4L2编程
@@ -101,15 +105,15 @@ https://github.com/noritsuna/UVCCameraSampleForAndroid
 ### 参考文献：
 
 驱动移植：
-linux下USB摄像头的使用说明 https://blog.csdn.net/flfihpv259/article/details/52367805
-linux USB 摄像头 驱动 移植，使用 https://blog.csdn.net/woshidahuaidan2011/article/details/52055057
-https://blog.csdn.net/codectq/article/details/44278465
-详解V4L2框架(UVC驱动) https://blog.csdn.net/Guet_Kite/article/details/78570059
++ linux下USB摄像头的使用说明 https://blog.csdn.net/flfihpv259/article/details/52367805
++ linux USB 摄像头 驱动 移植，使用 https://blog.csdn.net/woshidahuaidan2011/article/details/52055057
++ https://blog.csdn.net/codectq/article/details/44278465
++ 详解V4L2框架(UVC驱动) https://blog.csdn.net/Guet_Kite/article/details/78570059
 
 V4L2应用开发
-Video4linux详解 https://blog.csdn.net/tiankongtiankong01/article/details/53353876
-V4l2 demo https://blog.csdn.net/u010164190/article/details/53189836
-V4L2 ioctl接口 https://blog.csdn.net/g_salamander/article/details/8107692
++ Video4linux详解 https://blog.csdn.net/tiankongtiankong01/article/details/53353876
++ V4l2 demo https://blog.csdn.net/u010164190/article/details/53189836
++ V4L2 ioctl接口 https://blog.csdn.net/g_salamander/article/details/8107692
 
 ## 3.方案2：使用开源的UVCCamera库
 
@@ -121,12 +125,14 @@ https://github.com/jiangdongguo/AndroidUSBCamera
 ### 3.1方案特点：
 
 UVCCamera库工作在Android framework层，所以不需要Linux内核支持UVC协议，只需要支持USB HOST驱动即可操作USB摄像头。
+
 这种方案的优点是：
-	不需要修改Linux内核
-	不需要root权限
++ 不需要修改Linux内核
++ 不需要root权限
++
 缺点：
-不容易移植，需要手动安装NDK和gradle
-编译过程可能发生各种BUG
++ 不容易移植，需要手动安装NDK和gradle
++ 编译过程可能发生各种BUG
 
 ### 3.2使用方法：
 
@@ -152,8 +158,10 @@ compile 'com.github.jiangdongguo:AndroidUSBCamera:2.2.8'
 
 #### 错误1
 NDK编译出错解决办法。直接移植例程可能会出现下述问题：
-	Ndk-build.cmd返回非零数字2
-	No toolchains found in the NDK toolchains folder for ABI with prefix: mips64el-linux-android
+```
+Ndk-build.cmd返回非零数字2
+No toolchains found in the NDK toolchains folder for ABI with prefix: mips64el-linux-android
+```
 使用Android SDK组件中安装的NDK会导致编译各种错误。需要下载单独的NDK。在官网上下载最新版本安装即可。
 下载地址：https://developer.android.google.cn/ndk/downloads/
 
@@ -162,24 +170,32 @@ NDK编译出错解决办法。直接移植例程可能会出现下述问题：
 
 #### 错误2
 问题：
+```
 Failed to resolve: common
+```
 使用Android studio自带的gradle往往都会出现这个问题。从GitHub下载demo工程的gradle版本都是3.3，如果根据Android studio的提示将gradle升级到最新版本就会出现程序无法找到common的错误。
+
 如果使用Android studio自带gradle进行编译就不能升级新版本gradle。但是经过我的尝试，手动指定新版本的gradle不会引起编译出错。
 首先需要下载gradle。到官网下载适合版本的gradle: https://gradle.org/releases/ (经过我测试的版本是4.5)
 并在settings gradle中指定下载的gradle路径
 
 ![uvc_error2](assets/uvc-error2.png)
+
 注意:当Android studio弹出下面窗口提示更新gradle时，千万不要点update。可以点击最右面的按钮，永不更新！！！
+
 ![uvc_error2_2](assets/uvc-error2-2.png)
 
 #### 错误3
+
 问题：
 在UVCCamera例程中点击打开摄像头设备后程序闪退。
+
 这是因为某种原因导致我们编译的NDK有问题。
-1使用编译好的SO库替代NDK编译的SO库
-2将libuvccamera目标中build.gradle的如下几行注释掉。阻止NDK编译覆盖我们的SO库。
+1. 使用编译好的SO库替代NDK编译的SO库
+2. 将libuvccamera目标中build.gradle的如下几行注释掉。阻止NDK编译覆盖我们的SO库。
 
 如果突然出现程序内大量包找不到(宏观表现就是程序满江红全是未定义的变量)，使用下述方法解决
+
 解决方案：菜单栏file->invalidate caches/restart -> invalidate and restart
 
 ### 3.4 结果展示
@@ -191,25 +207,27 @@ Failed to resolve: common
 ### 3.5 参考文献
 
 参考文档：
-UVCCamera开发通用库 https://blog.csdn.net/andrexpert/article/details/78324181
-UVCCamera安卓驱动USB摄像头 https://blog.csdn.net/king_jie0210/article/details/71106720
-UVCCamera使用 https://blog.csdn.net/fengshiguang2012/article/details/79569280
-Linux USB 摄像头驱动 https://blog.csdn.net/qq_26093511/article/details/78763824
-UVC驱动外接摄像头 https://blog.csdn.net/luzhenyuxfcy/article/details/50883910
++ UVCCamera开发通用库 https://blog.csdn.net/andrexpert/article/details/78324181
++ UVCCamera安卓驱动USB摄像头 https://blog.csdn.net/king_jie0210/article/details/71106720
++ UVCCamera使用 https://blog.csdn.net/fengshiguang2012/article/details/79569280
++ Linux USB 摄像头驱动 https://blog.csdn.net/qq_26093511/article/details/78763824
++ UVC驱动外接摄像头 https://blog.csdn.net/luzhenyuxfcy/article/details/50883910
 
 参考例程：
-https://github.com/jiangdongguo/AndroidUSBCamera
-https://github.com/saki4510t/UVCCamera
++ https://github.com/jiangdongguo/AndroidUSBCamera
++ https://github.com/saki4510t/UVCCamera
 
 
 其他
 Android.mk转cmake https://blog.csdn.net/u012528526/article/details/80647537
 
 ## 4 源码萃取
+
 本章分析两种方案分别对应的底层架构和源码。单纯使用方案则不需要阅读本章
 
 
 ### 4.1 方案底层架构
+
 #### 方案1:
 Java层只提供基本界面，实际工作都是在Android Framework层进行处理。方案1APP的Framework层实质上就是一个V4L2应用程序。
 在初始化函数中打开/dev/video0设备并通过ioctl系统调用与uvc_driver驱动程序进行交互。交互的方式遵循V4L2接口规范。

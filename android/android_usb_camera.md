@@ -46,14 +46,14 @@ Device Drivers --->
      <*>Multimedia support --->
 		<*> Video capture adapters --->
 ```
-![compile-attr](images/2018/11/compile-attr.png)
+![compile-attr](assets/compile-attr.png)
 ```
 Device Drivers --->
      <*>Multimedia support --->
 		<*> Video capture adapters --->
 			<*> V4L USB devices --->
 ```
-![compile-attr2](images/2018/11/compile-attr2.png)
+![compile-attr2](assets/compile-attr2.png)
 
 保存并退出。此时，.config文件中以下配置项均应该为y
 ``` config
@@ -156,7 +156,7 @@ NDK编译出错解决办法。直接移植例程可能会出现下述问题：
 使用Android SDK组件中安装的NDK会导致编译各种错误。需要下载单独的NDK。在官网上下载最新版本安装即可。
 下载地址：https://developer.android.google.cn/ndk/downloads/
 
-![uvc_error1](images/2018/11/uvc-error1.png)
+![uvc_error1](assets/uvc-error1.png)
 在Android studio中file  project structure。选择解压后NDK的路径，然后重新编译程序。
 
 #### 错误2
@@ -167,9 +167,9 @@ Failed to resolve: common
 首先需要下载gradle。到官网下载适合版本的gradle: https://gradle.org/releases/ (经过我测试的版本是4.5)
 并在settings gradle中指定下载的gradle路径
 
-![uvc_error2](images/2018/11/uvc-error2.png)
+![uvc_error2](assets/uvc-error2.png)
 注意:当Android studio弹出下面窗口提示更新gradle时，千万不要点update。可以点击最右面的按钮，永不更新！！！
-![uvc_error2_2](images/2018/11/uvc-error2-2.png)
+![uvc_error2_2](assets/uvc-error2-2.png)
 
 #### 错误3
 问题：
@@ -184,7 +184,7 @@ Failed to resolve: common
 ### 3.4 结果展示
 
 效果如下图所示：
-![uvc_img](images/2018/11/uvc-img.png)
+![uvc_img](assets/uvc-img.png)
 
 
 ### 3.5 参考文献
@@ -222,4 +222,4 @@ Libuvc库是的运行需要基于开源的USB通信库libusb。可以理解为li
 运行与Framework层的libusb若想驱动USB接口，最终也需要和linux内核进行通信，这个通信是基于USB设备文件系统进行的。
 USB设备文件系统和uvc_driver一样，也属于Linux内核USB驱动程序。由它发起的USB传输事务最终也需要封装成URB的形式交由usb core进行处理。
 
-![android_uvc_framework](images/2018/11/android-uvc-framework.png)
+![android_uvc_framework](assets/android-uvc-framework.png)

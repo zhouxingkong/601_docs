@@ -3,7 +3,7 @@
 根据手册上的说明，GPS串口应该接在UART3上。此模块无需初始化，只要上电就会源源不断的将GPS数据通过串口发送到主控制器。
 
 GPS模块接线方式如下所示：
-![gps_wire](images/2018/11/gps-wire.png)
+![gps_wire](assets/gps-wire.png)
 
 
 Android系统驱动GPS模块的两个方案：
@@ -23,11 +23,11 @@ GPS模块提供的官方资料也是针对linux系统的驱动方式
 
 但是要注意：
 1.	访问串口需要Root权限。如果是新买的板子需要重新烧写android系统
-2.
+2.assets/
 
 
 节刚过如图所示：
-![gps_data_show](images/2018/11/gps-data-show.png)
+![gps_data_show](assets/gps-data-show.png)
 
 
 

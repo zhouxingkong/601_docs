@@ -105,6 +105,8 @@ private void run() {
 --|--|--
 SchedulingPolicyService|调度策略|不能删
 
+参考
+https://blog.csdn.net/touxiong/article/details/80533157
 
 ## 3.应用程序裁剪
 
@@ -127,9 +129,13 @@ SchedulingPolicyService|调度策略|不能删
 
 ### 3.2 优化的应用
 
+apps/目录中剩下的应用如图所示
 
-### 3.3 预装应用
+![](assets/markdown-img-paste-20190112102904624.png)
 
+### 3.3 修改桌面应用
+
+#### 将apk指定为桌面
 在AndroidMenifest.xml中指定作为桌面启动。
 
 ``` xml
@@ -140,27 +146,65 @@ SchedulingPolicyService|调度策略|不能删
   <category android:name="android.intent.category.MONKEY"/>
 </intent-filter>
 ```
+#### 将apk编入system.img
 
-编写android.mk文件
+在自己源码的packages\apps\路径下，新建test文件夹，然后将要添加的第三方app拷贝到该文件夹下，在test/下新建android.mk文件，内容如下：
 
-``` makefile
-LOCAL_PATH := $(call my-dir)
-my_archs := armeabi-v7a
-my_src_arch := $(call get-prebuilt-src-arch, $(my_archs))
-
+```
+LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
-LOCAL_MODULE := PA-launcher
-LOCAL_MODULE_CLASS := APPS
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
-LOCAL_MODULE_PATH := $(TARGET_OUT)/priv-app
 
-LOCAL_CERTIFICATE := platform
-#LOCAL_SRC_FILES := $(LOCAL_MODULE)_$(my_src_arch).apk
-LOCAL_SRC_FILES := $(LOCAL_MODULE).apk
-LOCAL_MODULE_TARGET_ARCH := $(my_src_arch)
-LOCAL_MULTILIB := both
-include $(BUILD_PREBUILT)
+LOCAL_POST_PROCESS_COMMAND := $(shell mkdir $(TARGET_OUT)/app/test/)
+LOCAL_POST_PROCESS_COMMAND := $(shell cp -r $(LOCAL_PATH)/*.apk $(TARGET_OUT)/app/test/)
 ```
 
-参考:https://blog.csdn.net/maetelibom/article/details/77466851
+然后编辑build/target/product/core.mk文件，将该apk的名字加入到PRODUCT_PACKAGES中，之后执行make编译后会在out/目录下的system/目录发现生成了test/文件夹，文件夹的内容即为test.apk，重新烧录程序到机器中即可发现添加的apk已经合入system.img中
+
+参考
+https://blog.csdn.net/love000520/article/details/52193597
+
+#### 删除系统桌面
+
+
+
+## 4.其他裁剪
+
+### 4.1 去除锁屏
+
+
+frameworks/base/packages/SettingsProvider/res/values/defaults.xml
+``` xml
+<integer name="def_screen_off_timeout">-1</integer>
+```
+以毫秒为单位，设为-1即可，重新编译Setting Provider模块但是只是这样修改的话，启动后依旧会进入锁屏状态，解锁之后就再也不会锁屏了开机不锁屏
+frameworks/base/policy/src/com/android/internal/policy/impl/KeyguardViewMediator.java
+``` java
+/**    
+ * External apps (like the phone app) can tell us to disable the keygaurd.   
+ */  
+ private boolean mExternallyEnabled = true;改为false
+
+```
+
+### 4.2 去除导航栏
+
+在frameworks/base/core/res$ ls ./res/values/config.xml中更改config_showNavigationBar为false即为关闭，为true即为打开。
+
+参考:
+https://blog.csdn.net/maetelibom/article/details/77466851
+Android将第三方apk文件编译生成到system.img中
+https://blog.csdn.net/love000520/article/details/52193597
+
+## 附录
+
+adb shell中查看已安装的APK
+```
+pm list packages
+```
+
+快速生成单个镜像文件的方法
+```
+make systemimage    - system.img
+make userdataimage  - userdata.img
+make ramdisk         - ramdisk.img
+```

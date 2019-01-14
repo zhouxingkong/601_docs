@@ -158,10 +158,15 @@ LOCAL_POST_PROCESS_COMMAND := $(shell mkdir $(TARGET_OUT)/app/test/)
 LOCAL_POST_PROCESS_COMMAND := $(shell cp -r $(LOCAL_PATH)/*.apk $(TARGET_OUT)/app/test/)
 ```
 
-然后编辑build/target/product/core.mk文件，将该apk的名字加入到PRODUCT_PACKAGES中，之后执行make编译后会在out/目录下的system/目录发现生成了test/文件夹，文件夹的内容即为test.apk，重新烧录程序到机器中即可发现添加的apk已经合入system.img中
+然后编辑build/target/product/core.mk文件，将该apk的名字加入到PRODUCT_PACKAGES中，之后执行make编译后会
++ 在out/目录下的system/PA/文件夹，文件夹的内容即为PA.apk
++ out/目录下的system/lib/文件夹中出现依赖的so库
+重新烧录程序到机器中即可发现添加的apk已经合入system.img中
 
 参考
-https://blog.csdn.net/love000520/article/details/52193597
++ https://blog.csdn.net/love000520/article/details/52193597
++ https://blog.csdn.net/sdvch/article/details/44728691
++ https://284772894.iteye.com/blog/1882946
 
 #### 删除系统桌面
 
@@ -188,7 +193,8 @@ frameworks/base/policy/src/com/android/internal/policy/impl/KeyguardViewMediator
 
 ### 4.2 去除导航栏
 
-在frameworks/base/core/res$ ls ./res/values/config.xml中更改config_showNavigationBar为false即为关闭，为true即为打开。
+device\friendly-arm\nanopi3\overlay\frameworks\base\core\res\res\values\config.xml
+中更改config_showNavigationBar为false即为关闭，为true即为打开。
 
 参考:
 https://blog.csdn.net/maetelibom/article/details/77466851
@@ -208,3 +214,5 @@ make systemimage    - system.img
 make userdataimage  - userdata.img
 make ramdisk         - ramdisk.img
 ```
+
+想要不make clean就能刷新程序

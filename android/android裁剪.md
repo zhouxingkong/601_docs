@@ -101,9 +101,8 @@ private void run() {
 
 ### 2.2 上层服务裁剪
 
-服务名称|功能|操作
---|--|--
-SchedulingPolicyService|调度策略|不能删
+这里懒得整理了，具体可以参考裁剪过后的java文件
+
 
 参考
 https://blog.csdn.net/touxiong/article/details/80533157
@@ -131,7 +130,76 @@ https://blog.csdn.net/touxiong/article/details/80533157
 
 apps/目录中剩下的应用如图所示
 
-![](assets/markdown-img-paste-20190112102904624.png)
+```
+packages/
+├── apps
+│   ├── BasicSmsReceiver
+│   ├── Bluetooth
+│   ├── Browser
+│   ├── Calculator
+│   ├── Calendar
+│   ├── CellBroadcastReceiver
+│   ├── CertInstaller
+│   ├── DeskClock
+│   ├── Email
+│   ├── Exchange
+│   ├── HTMLViewer
+│   ├── InCallUI
+│   ├── KeyChain
+│   ├── LegacyCamera
+│   ├── Mms
+│   ├── Nfc
+│   ├── OneTimeInitializer
+│   ├── PackageInstaller
+│   ├── Protips
+│   ├── QuickSearchBox
+│   ├── Settings
+│   ├── SmartCardService
+│   ├── SoundRecorder
+│   ├── SpareParts
+│   ├── SpeechRecorder
+│   ├── Stk
+│   ├── Tag
+│   ├── Terminal
+│   ├── TvSettings
+│   └── UnifiedEmail
+├── experimental
+│   ├── Bummer
+│   ├── DreamTheater
+│   ├── ExampleImsFramework
+│   ├── LoaderApp
+│   ├── NotificationListenerSample
+│   ├── NotificationLog
+│   ├── NotificationShowcase
+│   ├── PrintApp
+│   ├── PrintService
+│   ├── PrintService2
+│   ├── procstatlog
+│   ├── RpcPerformance
+│   ├── SELinux
+│   └── TestBack
+├── inputmethods
+│   ├── LatinIME
+│   └── OpenWnn
+├── providers
+│   ├── ApplicationsProvider
+│   ├── CalendarProvider
+│   ├── ContactsProvider
+│   ├── DownloadProvider
+│   ├── MediaProvider
+│   ├── PartnerBookmarksProvider
+│   ├── TelephonyProvider
+│   ├── TvProvider
+│   └── UserDictionaryProvider
+├── screensavers
+│   ├── Basic
+│   ├── PhotoTable
+│   └── WebView
+├── services
+│   └── Mms
+└── wallpapers
+    └── Basic
+```
 
 ### 3.3 修改桌面应用
 
@@ -146,16 +214,43 @@ apps/目录中剩下的应用如图所示
   <category android:name="android.intent.category.MONKEY"/>
 </intent-filter>
 ```
+
+#### 去除系统自带桌面
+
+在源码中搜索"android.intent.category.HOME"关键字得到如下结果
+```
+development\apps\SdkSetup
+development\samples\Home
+packages\apps\Launcher2
+packages\apps\Launcher3
+packages\apps\ManagedProvisioning
+packages\apps\Provision
+packages\apps\Settings
+```
+这些就是定义了作为桌面应用的系统应用。如果需要将我们的app作为桌面应用的话需要去除这些应用的桌面设定。要么裁减掉整个应用，要么删除AndroidMenifest.xml中的"android.intent.category.HOME"设定。
+
 #### 将apk编入system.img
 
-在自己源码的packages\apps\路径下，新建test文件夹，然后将要添加的第三方app拷贝到该文件夹下，在test/下新建android.mk文件，内容如下：
+>注:网上找的所有方法对于PA应用程序来讲都GG了，所以最后PA程序并没有预置到系统镜像中。但是下面介绍的方法对于其他的apk可能会管用。
+
+在自己源码的packages\apps\路径下，新建PA文件夹，然后将要添加的第三方apk以及apk依赖的so库拷贝到该文件夹下，在PA/下新建Android.mk文件，内容如下：
 
 ```
-LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
+LOCAL_MODULE := PA
+LOCAL_MODULE_PATH := $(TARGET_OUT_APPS_PRIVILEGED)
+LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)	#module的后缀，=.apk
+LOCAL_MODULE_CLASS := APPS	#标识所编译模块最后放置的位置,APPS 表示放置在/system/app
+LOCAL_MODULE_OWNER := 601
+LOCAL_MODULE_TAGS := optional
+#LOCAL_BUILT_MODULE_STEM := package.apk
+LOCAL_SRC_FILES := PA.apk
+LOCAL_CERTIFICATE := platform
+include $(BUILD_PREBUILT)
 
-LOCAL_POST_PROCESS_COMMAND := $(shell mkdir $(TARGET_OUT)/app/test/)
-LOCAL_POST_PROCESS_COMMAND := $(shell cp -r $(LOCAL_PATH)/*.apk $(TARGET_OUT)/app/test/)
+LOCAL_POST_PROCESS_COMMAND := $(shell unzip $(LOCAL_PATH)/*.apk -d $(LOCAL_PATH)/apkdump/)
+LOCAL_POST_PROCESS_COMMAND := $(shell cp -r $(LOCAL_PATH)/apkdump/lib/armeabi-v7a/*.so $(TARGET_OUT)/lib/)
+LOCAL_POST_PROCESS_COMMAND := $(shell rm -rf $(LOCAL_PATH)/apkdump)
 ```
 
 然后编辑build/target/product/core.mk文件，将该apk的名字加入到PRODUCT_PACKAGES中，之后执行make编译后会
@@ -164,18 +259,17 @@ LOCAL_POST_PROCESS_COMMAND := $(shell cp -r $(LOCAL_PATH)/*.apk $(TARGET_OUT)/ap
 重新烧录程序到机器中即可发现添加的apk已经合入system.img中
 
 参考
++ https://blog.csdn.net/newairzhang/article/details/50631311
 + https://blog.csdn.net/love000520/article/details/52193597
 + https://blog.csdn.net/sdvch/article/details/44728691
 + https://284772894.iteye.com/blog/1882946
-
-#### 删除系统桌面
-
 
 
 ## 4.其他裁剪
 
 ### 4.1 去除锁屏
 
+想要开机后直接启动自己的app还需要去除开机后的解锁界面以及长时间无操作后的锁屏画面。方法如下:
 
 frameworks/base/packages/SettingsProvider/res/values/defaults.xml
 ``` xml
@@ -193,8 +287,11 @@ frameworks/base/policy/src/com/android/internal/policy/impl/KeyguardViewMediator
 
 ### 4.2 去除导航栏
 
+如果需要去除系统的导航栏(屏幕边上的三个虚拟按键),则做如下修改
+
 device\friendly-arm\nanopi3\overlay\frameworks\base\core\res\res\values\config.xml
 中更改config_showNavigationBar为false即为关闭，为true即为打开。
+
 
 参考:
 https://blog.csdn.net/maetelibom/article/details/77466851

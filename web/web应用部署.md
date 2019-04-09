@@ -1,7 +1,7 @@
 # web应用部署
 
 
-## 应用程序编译
+## 1.应用程序编译
 
 对于使用spring boot框架编写的web服务应用程序，使用下面的语句编译
 ```
@@ -59,7 +59,37 @@ COPY ${DEPENDENCY}/BOOT-INF/classes /app
 ENTRYPOINT ["java","-cp","app:app/lib/*","seu.lab601.UniCloud.UniCloudApplication"]
 ```
 
-## 使用docker-compose
+
+
+## 2.部署mysql
+
+
+
+## 3.部署redis
+
+### 在docker容器中部署redis
+
+```
+docker pull redis
+```
+
+在windows端安装redis，然后运行redis客户端和服务器进行连接
+```
+redis-cli -h 47.101.194.206 -p 6379
+```
+
+### 在web app中连接redis
+
+
+参考:
+https://blog.csdn.net/weixin_39723544/article/details/80743074
+
+
+## 4.使用nginx实现负载均衡
+
+
+## 5.使用docker-compose部署
+
 
 
 编写docker-compose.yml配置脚本

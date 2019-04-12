@@ -61,29 +61,6 @@ ENTRYPOINT ["java","-cp","app:app/lib/*","seu.lab601.UniCloud.UniCloudApplicatio
 
 
 
-## 2.部署mysql
-
-
-
-## 3.部署redis
-
-### 在docker容器中部署redis
-
-```
-docker pull redis
-```
-
-在windows端安装redis，然后运行redis客户端和服务器进行连接
-```
-redis-cli -h 47.101.194.206 -p 6379
-```
-
-### 在web app中连接redis
-
-
-参考:
-https://blog.csdn.net/weixin_39723544/article/details/80743074
-
 
 ## 4.使用nginx实现负载均衡
 

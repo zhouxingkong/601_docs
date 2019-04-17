@@ -2,6 +2,12 @@
 
 ## 面向切面编程
 
+Aspect Oriented Programming(AOP)，面向切面编程，是一个比较热门的话题。AOP主要实现的目的是针对业务处理过程中的切面进行提取，它所面对的是处理过程中的某个步骤或阶段，以获得逻辑过程中各部分之间低耦合性的隔离效果。
+
+
+![](assets/markdown-img-paste-20190412145445361.png)
+
+![](assets/markdown-img-paste-20190412145434424.png)
 
 ## 切入点表达式(aspactj)
 

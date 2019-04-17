@@ -1,15 +1,14 @@
 # linux USB 通信
 
 
-## 整体方案
+## 方案概述
 
 和Android系统的USB驱动框架进行对比
 ![](assets/markdown-img-paste-20190329142827697.png)
 
 
-## 交叉编译
+## 交叉编译libusb
 
-### 交叉编译libusb
 
 下载libusb源码
 
@@ -98,8 +97,9 @@ export DISPLAY=:0.0
 ```
 
 
-## 速度测试
+## 速度测试结果
 
+使用平台：mx6DL
 
   | 最大  | 最小  |  平均
 --|---|---|--

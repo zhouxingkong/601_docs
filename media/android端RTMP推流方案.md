@@ -1,14 +1,67 @@
 # android端RTMP推流方案
 
+版本|日期|作者
+--|--|--
+1.0  |   |周星宇  
 
-# 方案1: 使用ffmpeg
-
-需要app拥有root权限
+# 方案1: 基于ffmpeg的软件编码
 
 
+## 0.方案概述
+基于ffmpeg的软件视频编码需要获取/dev/graphics/fb0设备的访问权限，所以需要app拥有root权限。
+
+![](assets/markdown-img-paste-20190516182256585.png)
+
+## 1.输入设备
+
+输入设备使用Linux内核图形缓冲区FrameBuffer
+
+``` c
+AVInputFormat *ifmt = av_find_input_format("fbdev");
+if (avformat_open_input(&pInputFormatContext, "/dev/graphics/fb0", ifmt, &options) != 0) {
+	loge("Couldn't open input stream.\n");
+	return -1;
+}
+```
+
+## 2.编码器配置
+
+配置H264编码器的各种参数
+
+``` c
+/*创建AVCodecContext*/
+pOutputCodecContex = avcodec_alloc_context3(pOutputCodec);
+//编码器的ID号，这里为264编码器，可以根据video_st里的codecID 参数赋值
+pOutputCodecContex->codec_id = pOutputCodec->id;
+//像素的格式，也就是说采用什么样的色彩空间来表明一个像素点
+pOutputCodecContex->pix_fmt = AV_PIX_FMT_YUV420P;
+//编码器编码的数据类型
+pOutputCodecContex->codec_type = AVMEDIA_TYPE_VIDEO;
+//编码目标的视频帧大小，以像素为单位
+pOutputCodecContex->width = OUTPUT_WIDTH;
+pOutputCodecContex->height = OUTPUT_HEIGHT;
+pOutputCodecContex->framerate = frametate;
+//帧率的基本单位，我们用分数来表示，
+pOutputCodecContex->time_base = time_base;
+//目标的码率，即采样的码率；显然，采样码率越大，视频大小越大
+pOutputCodecContex->bit_rate = 500000;
+//固定允许的码率误差，数值越大，视频越小
+//    pCodecCtx->bit_rate_tolerance = 4000000;
+pOutputCodecContex->gop_size = 50;
+
+pOutputCodecContex->qcompress = 0.6;
+//最大和最小量化系数
+pOutputCodecContex->qmin = 10;
+pOutputCodecContex->qmax = 51;
+//Optional Param
+//两个非B帧之间允许出现多少个B帧数
+//设置0表示不使用B帧
+//b 帧越多，图片越小
+pOutputCodecContex->max_b_frames = 0;
+```
 
 
-# 方案2:MediaCodec+librtmp
+# 方案2:基于MediaCodec+librtmp的硬编码
 
 
 ## 0.方案概述
@@ -20,11 +73,14 @@
 
 ## 1.VirtualDisplay录屏
 
+参考google官方MediaProjection的例程
 
+https://github.com/googlesamples/android-ScreenCapture
 
 
 ## 2.MediaCodec硬编码
 
+从广义上讲，一个编解码器处理输入数据以生成输出数据。 它异步地处理数据，并使用一组输入和输出缓冲器。 从一个简单的层面上看，可请求（或接收）一个空的输入缓冲器，然后用数据填满它，并将其发送到编解码器去处理。 编解码器使用这些数据并转换这些数据到它某个空的输出缓冲区。 最后，您请求（或接收）一个已填充数据的输出缓冲区，消耗其内容并将其释放回并回到编解码器。
 
 ![](assets/markdown-img-paste-20190509211619489.png)
 
@@ -90,7 +146,18 @@ public class MediaCallback extends MediaCodec.Callback {
 
 
 
+注意，在android图形缓冲区中进行纹理采样需要使用samplerExternalOES采样器
 
+``` GLSL
+#extension GL_OES_EGL_image_external : require
+precision highp float;
+varying highp vec2 vTextureCoord;
+uniform samplerExternalOES uTexture;
+void main(){
+    vec4  color = texture2D(uTexture, vTextureCoord);
+    gl_FragColor = color;
+}
+```
 
 ## 4.效果
 
@@ -107,7 +174,7 @@ public class MediaCallback extends MediaCodec.Callback {
 这种情况可以上使用一个FrameBuffer作为缓冲区进行离屏渲染，同时进行图像的预处理
 ![](assets/markdown-img-paste-20190516095037489.png)
 
-## 遇到问题总结
+## 6.遇到问题总结
 
 ### MediaCodec问题
 
@@ -138,7 +205,7 @@ public class MediaCallback extends MediaCodec.Callback {
 + https://blog.csdn.net/u012521570/article/details/78783294
 
 
-## 参考
+## 7.参考
 参考:
 + https://www.jianshu.com/nb/17697147
 + MediaCodec官方文档译文 https://github.com/eterrao/ScreenRecorder.git

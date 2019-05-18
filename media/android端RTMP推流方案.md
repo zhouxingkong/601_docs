@@ -159,6 +159,62 @@ void main(){
 }
 ```
 
+EGL初始化
+
+``` java
+public void initEGL(EGLContext sharedContext, Object outputSurface) {
+    eglDisplay = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+    if (EGL14.EGL_NO_DISPLAY == eglDisplay) {
+        throw new RuntimeException("eglGetDisplay,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
+    }
+    int versions[] = new int[2];
+    if (!EGL14.eglInitialize(eglDisplay, versions, 0, versions, 1)) {
+        throw new RuntimeException("eglInitialize,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
+    }
+    int configsCount[] = new int[1];
+    EGLConfig configs[] = new EGLConfig[1];
+    int configSpec[] = new int[]{
+            EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT,
+            EGL14.EGL_RED_SIZE, 8,
+            EGL14.EGL_GREEN_SIZE, 8,
+            EGL14.EGL_BLUE_SIZE, 8,
+            EGL_RECORDABLE_ANDROID, 1,
+            EGL14.EGL_DEPTH_SIZE, 0,
+            EGL14.EGL_STENCIL_SIZE, 0,
+            EGL14.EGL_NONE
+    };
+    EGL14.eglChooseConfig(eglDisplay, configSpec, 0, configs, 0, 1, configsCount, 0);
+    if (configsCount[0] <= 0) {
+        throw new RuntimeException("eglChooseConfig,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
+    }
+    eglConfig = configs[0];
+    int[] surfaceAttribs = {
+            EGL14.EGL_NONE
+    };
+    int contextSpec[] = new int[]{
+            EGL14.EGL_CONTEXT_CLIENT_VERSION, 2,
+            EGL14.EGL_NONE
+    };
+
+    if (sharedContext == null) {
+        eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig, EGL14.EGL_NO_CONTEXT, contextSpec, 0);
+    } else {
+        eglContext = EGL14.eglCreateContext(eglDisplay, eglConfig, sharedContext, contextSpec, 0);
+    }
+    if (EGL14.EGL_NO_CONTEXT == eglContext) {
+        throw new RuntimeException("eglCreateContext,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
+    }
+
+    int[] values = new int[1];
+    EGL14.eglQueryContext(eglDisplay, eglContext, EGL14.EGL_CONTEXT_CLIENT_VERSION, values, 0);
+    eglSurface = EGL14.eglCreateWindowSurface(eglDisplay, eglConfig, outputSurface, surfaceAttribs, 0);
+    if (null == eglSurface || EGL14.EGL_NO_SURFACE == eglSurface) {
+        throw new RuntimeException("eglCreateWindowSurface,failed:" + GLUtils.getEGLErrorString(EGL14.eglGetError()));
+    }
+}
+
+```
+
 ## 4.效果
 
 播放器展示的效果如图所示

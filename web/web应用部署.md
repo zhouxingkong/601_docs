@@ -59,14 +59,7 @@ COPY ${DEPENDENCY}/BOOT-INF/classes /app
 ENTRYPOINT ["java","-cp","app:app/lib/*","seu.lab601.UniCloud.UniCloudApplication"]
 ```
 
-
-
-
-## 4.使用nginx实现负载均衡
-
-
 ## 5.使用docker-compose部署
-
 
 
 编写docker-compose.yml配置脚本
@@ -97,3 +90,10 @@ services:
     environment:
       TZ: Asia/Shanghai
 ```
+
+## 6.spring cloud微服务部署
+
+1. 启动eureka服务
+1. 启动config服务
+1. 启动API网关服务
+1. 然后启动其他服务

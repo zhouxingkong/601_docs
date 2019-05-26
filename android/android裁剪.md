@@ -278,8 +278,13 @@ frameworks/base/packages/SettingsProvider/res/values/defaults.xml
 ``` xml
 <integer name="def_screen_off_timeout">-1</integer>
 ```
+
+对于nanoPC-T3来说，在device目录中重写了一部分系统配置，所以那个路径下的也要改
+
+![](assets/markdown-img-paste-20190523111340967.png)
+
 以毫秒为单位，设为-1即可，重新编译Setting Provider模块但是只是这样修改的话，启动后依旧会进入锁屏状态，解锁之后就再也不会锁屏了开机不锁屏
-frameworks/base/policy/src/com/android/internal/policy/impl/KeyguardViewMediator.java
+frameworks\base\packages\SystemUI\src\com\android\systemui\keyguard\KeyguardViewMediator.java
 ``` java
 /**    
  * External apps (like the phone app) can tell us to disable the keygaurd.   

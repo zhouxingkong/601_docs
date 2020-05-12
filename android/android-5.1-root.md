@@ -35,7 +35,7 @@ System.err: java.io.IOException: Error running exec(). Command: [su] Working Dir
 
 改变su的默认访问权限,更改frameworks/base/include/private/android_filesystem_config.h
 
-``` c
+``` C
 diff --git a/include/private/android_filesystem_config.h b/include/private/android_filesystem_config.h
 index 2f528b9..1223b45 100644
 --- a/include/private/android_filesystem_config.h

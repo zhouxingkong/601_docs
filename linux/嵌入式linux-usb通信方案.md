@@ -13,7 +13,7 @@
 ## 交叉编译libusb
 
 
-下载libusb源码
+下载libusb源码:https://github.com/libusb/libusb/releases
 
 执行下列命令进行编译
 

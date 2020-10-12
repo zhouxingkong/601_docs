@@ -14,7 +14,7 @@
 
 将INIT_BOOTCHART:= true加入Android.mk文件，如下图所示：
 
-![](https://github.com/ccxx0914/ccxx0914.github.io/blob/master/601docs/Assets/1602503078.png)
+![](https://github.com/zhouxingkong/601_docs/blob/master/android/assets/1602503078.png)
 
 ### 2. 修改system/core/init/bootchart.h 
 
@@ -76,14 +76,14 @@ if interval == 0:
    interval = 1
 ~~~
 
-![](https://github.com/ccxx0914/ccxx0914.github.io/blob/master/601docs/Assets/1602506101.jpg)
+![](https://github.com/zhouxingkong/601_docs/blob/master/android/assets/1602506101.jpg)
 
 重新执行bootchart bootchart.tgz命令，若其他文件还存在上述报错，则按照上述方法继续进行修改，直至成功执行bootchart命令，最终成功生成bootchart图表，如下图所示：
 
-![](https://github.com/ccxx0914/ccxx0914.github.io/blob/master/601docs/Assets/1602506589.jpg)
+![](https://github.com/zhouxingkong/601_docs/blob/master/android/assets/1602506589.jpg)
 
 ## 四、大功告成
 
 最终生成的bootchart图表如下图所示：
 
-![](https://github.com/ccxx0914/ccxx0914.github.io/blob/master/601docs/Assets/ecc5e06e83837857d9a15a913483e50.png)
+![](https://github.com/zhouxingkong/601_docs/blob/master/android/assets/ecc5e06e83837857d9a15a913483e50.png)
